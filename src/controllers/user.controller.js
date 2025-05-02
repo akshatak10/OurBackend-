@@ -21,24 +21,32 @@ const registerUser = asyncHandler( async (req, res) => {
     8. check for user creation 
     9. return res
     */
-    const {email, fullName, userName, password} = res.body
-    console.log(email);
+    const {email, fullName, username, password} = req.body
+    // console.log(email);
     if(
-        [email, fullName, userName, password].some((value) => value?.trim() === "")
+        [email, fullName, username, password].some((value) => value?.trim() === "")
     ){
         throw new ApiError(400,"All fields are required");
     }
     
-    const existedUser = User.findOne({
-        $or : [{ userName }, { email }]// or operator
+    const existedUser = await User.findOne({
+        $or : [{ username }, { email }]// or operator
     })
 
     if(existedUser){
         throw new ApiError(409, "User with email or username already exists");
     }
 
+    // console.log(req.body);
+    
+
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar file is required");
@@ -55,22 +63,21 @@ const registerUser = asyncHandler( async (req, res) => {
         throw new ApiError(400, "Avatar file is required");
     }
 
-    User.create({
+    const newUser = await User.create({
         fullName,
         avatar: avatar.url,
         coverImage: coverImage?.url || "",
-        email, 
+        email,
         password,
-        userName: userName.toLowerCase()
-    })
-
-    const createdUser = User.findById(User._id).select(
-        "-password -refreshToken"
-    )
-
-    if(!createdUser) {
-        throw new ApiError(500, "registration of User is unsuccessfull")
+        username: username.toLowerCase()
+    });
+    
+    const createdUser = await User.findById(newUser._id).select("-password -refreshToken");
+    
+    if (!createdUser) {
+        throw new ApiError(500, "registration of User is unsuccessfull");
     }
+    
 
     return res.status(201).json(
         new ApiResponse(200, createdUser, "User registered successfully")
