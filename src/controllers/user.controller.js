@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { mongoose } from "mongoose";
 import jwt from "jsonwebtoken";
 
 
@@ -168,10 +169,9 @@ const logOutUser = asyncHandler( async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined,
-                // can add more fields here that we want to update
-            }
+              $unset: {
+                refreshToken: 1,
+              }  // can add more fields here that we want to update
         },
         {
             new: true // return new value with refreshToken undefined
@@ -377,7 +377,7 @@ const getUserChannelProfile = asyncHandler( async (req, res) => {
                     $size: "$subscribers"
                 },
                 channelsSubscribedToCount: {
-                    $size: "subscribedTo"
+                    $size: "$subscribedTo"
                 },
                 isSubscribed: {
                     $cond: {
