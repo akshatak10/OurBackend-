@@ -27,7 +27,7 @@ import dashboardRouter from "./routes/dashboard.routes.js"
 
 //router declaration
 app.use("/api/v1/users", userRouter)
-app.use("/app/v1/videos", videoRouter)
+app.use("/api/v1/videos", videoRouter)
 app.use("/api/v1/healthcheck", healthcheckRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/subscriptions", subscriptionRouter)

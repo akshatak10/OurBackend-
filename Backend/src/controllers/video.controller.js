@@ -12,7 +12,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     //TODO: get all videos based on query, sort, pagination
     const match = {}
     if(query){
-        const regex = RegExp(query, 'i')
+        const regex = RegExp(query, 'i') // i makes it case insensitive
         match.$or = [
             {title : regex},
             {description : regex}
@@ -26,7 +26,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         match.owner = mongoose.Types.ObjectId(userId);
     }
 
-    const sort = { [sortBy]: sortType === 'asc' ? 1 : -1}
+    const sort = { [sortBy] : sortType === 'asc' ? 1 : -1}
 
     const aggregate = Video.aggregate([
         {
@@ -60,19 +60,19 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const publishAVideo = asyncHandler(async (req, res) => {
     // TODO: get video, upload to cloudinary, create video
     const { title, description, duration } = req.body;
-  if (!req.files || !req.files.videoFile || !req.files.thumbnail) {
+  if (!req.files || !req.files.thumbnail) {
     throw new ApiError(400, 'Video file and thumbnail are required');
   }
 
   // Upload to Cloudinary
-  const videoUpload = await uploadOnCloudinary(req.files.videoFile[0].path, 'videos');
+//   const videoUpload = await uploadOnCloudinary(req.files.videoFile[0].path, 'videos');
   const thumbnailUpload = await uploadOnCloudinary(req.files.thumbnail[0].path, 'thumbnails');
 
   const video = await Video.create({
     title,
     description,
     duration,
-    videoFile: videoUpload.secure_url,
+    // videoFile: videoUpload.secure_url,
     thumbnail: thumbnailUpload.secure_url,
     owner: req.user.id
   });
